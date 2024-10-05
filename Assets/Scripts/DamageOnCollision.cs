@@ -6,6 +6,8 @@ public class DamageOnCollision : MonoBehaviour
 {
     public int damageAmount = 10;
     public string targetTag = "Target";
+    
+    
     void OnCollisionEnter2D(Collision2D collision)
     {
         Debug.Log("OnCollisionEnter2D");
