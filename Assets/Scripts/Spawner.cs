@@ -29,7 +29,6 @@ public class Spawner : MonoBehaviour {
             Pathfinding pathfinding = prefab.GetComponent<Pathfinding>();
             if (pathfinding != null) {
                 pathfinding.target = target;
-                pathfinding.minDistance = 4;
             } 
             yield return new WaitForSeconds(spawnInterval);
         }
