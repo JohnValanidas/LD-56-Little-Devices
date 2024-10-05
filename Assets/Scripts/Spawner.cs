@@ -14,12 +14,7 @@ public class Spawner : MonoBehaviour {
     void Start() {
         StartCoroutine(SpawnPrefab());
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    
 
     IEnumerator SpawnPrefab() {
         while (true) {
