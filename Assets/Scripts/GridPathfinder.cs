@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class GridPathfinder : MonoBehaviour
 {
-    public GameGrid gameGrid;
+    private GameGrid gameGrid;
 
     private List<Vector3Int> relativeNeighbors = new List<Vector3Int>();
 
@@ -15,6 +15,11 @@ public class GridPathfinder : MonoBehaviour
         relativeNeighbors.Add(new Vector3Int(0, 1));
         relativeNeighbors.Add(new Vector3Int(-1, 0));
         relativeNeighbors.Add(new Vector3Int(0, -1));
+    }
+
+    void Start()
+    {
+        gameGrid = FindObjectOfType<GameGrid>();
     }
 
 
@@ -30,7 +35,27 @@ public class GridPathfinder : MonoBehaviour
 
     private IList<Vector3Int> ReconstructPath(Dictionary<Vector3Int, Vector3Int> cameFrom, Vector3Int current)
     {
-        return new List<Vector3Int>();
+        Debug.Log($"Reconstructing path: {current}, cameFrom: {cameFrom.Count}");
+
+        var path = new List<Vector3Int>();
+        path.Add(current);
+
+        while (cameFrom.ContainsKey(current))
+        {
+            current = cameFrom[current];
+            path.Add(current);
+        }
+
+        path.Reverse();
+
+        string s = "Path: ";
+        foreach(var cell in path)
+        {
+            s += $"({cell.x},{cell.y}),";
+        }
+        Debug.Log(s);
+
+        return path;
     }
 
     private IEnumerable<Vector3Int> Neighbors(Vector3Int cellPos)
@@ -38,7 +63,7 @@ public class GridPathfinder : MonoBehaviour
         foreach (var pos in relativeNeighbors)
         {
             var newCellPos = cellPos + pos;
-            if (gameGrid.InGridBounds(newCellPos))
+            if (gameGrid.InGridBounds(newCellPos) && !gameGrid.ExistsAtCell(newCellPos))
             {
                 yield return newCellPos;
             }
@@ -49,7 +74,7 @@ public class GridPathfinder : MonoBehaviour
 
     public IList<Vector3Int> FindPath(Vector3Int start, Vector3Int goal)
     {
-        var cells = new List<Vector3Int>();
+        Debug.Log($"GridPathfinder.FindPath {start} -> {goal}");
 
         var openSet = new PriorityQueue<Vector3Int>();
 
@@ -61,8 +86,12 @@ public class GridPathfinder : MonoBehaviour
         var fScore = new Dictionary<Vector3Int, float>();
         fScore[start] = Heuristic(start);
 
+        openSet.Enqueue(start, fScore[start]);
+
         while (!openSet.IsEmpty())
         {
+            //Debug.Log($"openSet count: {openSet.Count}");
+
             var current = openSet.Dequeue();
             if (current == goal)
             {
@@ -71,7 +100,7 @@ public class GridPathfinder : MonoBehaviour
             
             foreach (var neighbor in Neighbors(current))
             {
-                var tentative_gScore = gScore[current] + Weight(current, neighbor);
+                var tentative_gScore = gScore.GetValueOrDefault(current, float.PositiveInfinity) + Weight(current, neighbor);
                 if (tentative_gScore < gScore.GetValueOrDefault(neighbor, float.PositiveInfinity))
                 {
                     cameFrom[neighbor] = current;
@@ -80,11 +109,15 @@ public class GridPathfinder : MonoBehaviour
                     if (!openSet.Contains(neighbor))
                     {
                         openSet.Enqueue(neighbor, fScore.GetValueOrDefault(neighbor, float.PositiveInfinity));
+                    } else
+                    {
+                        openSet.Replace(neighbor, fScore.GetValueOrDefault(neighbor, float.PositiveInfinity));
                     }
                 }
             }
         }
 
+        Debug.LogError($"Path not found for {start} -> {goal}");
         return null;
     }
 }

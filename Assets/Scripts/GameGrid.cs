@@ -10,6 +10,7 @@ public class GameGrid : MonoBehaviour
 
     public GameObject spawner;
     public GameObject target;
+    public GameObject block;
 
     private GridLayout grid;
 
@@ -32,30 +33,22 @@ public class GameGrid : MonoBehaviour
 
         grid = GetComponentInParent<GridLayout>();
         Debug.Assert(grid, "Grid NOT FOUND!");
-
-        var rect = Camera.main.pixelRect;
-        Debug.Log($"rect: {rect}");
-
-        var minTile = grid.WorldToCell(Camera.main.ScreenToWorldPoint(rect.min));
-        var maxTile = grid.WorldToCell(Camera.main.ScreenToWorldPoint(rect.max));
-
-        var cellSize = grid.cellSize;
-
-        for (var y = minTile.y; y <= maxTile.y; y += 1)
-        {
-            for (var x = minTile.x; x <= maxTile.x; x += 1)
-            {
-                var start = grid.CellToWorld(new Vector3Int(x, y, 0));
-                var end = new Vector3(start.x + cellSize.x, start.y + cellSize.y);
-                DrawDebugTile(start, end, Color.black, 1f);
-            }
-        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        GameObject objectToInstiate = null;
+
+        if (Input.GetMouseButtonDown(0)) // left
+        {
+            objectToInstiate = spawner;
+        } else if (Input.GetMouseButtonDown(1)) // right
+        {
+            objectToInstiate = block;
+        }
+
+        if (objectToInstiate != null)
         {
             var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
@@ -64,7 +57,7 @@ public class GameGrid : MonoBehaviour
 
             if (!ExistsAtCell(cellPos))
             {
-                var instance = InstantiateAtCell(cellPos);
+                var instance = InstantiateAtCell(objectToInstiate, cellPos);
 
                 var component = instance.GetComponent<Spawner>();
                 component.target = target.transform;
@@ -73,6 +66,8 @@ public class GameGrid : MonoBehaviour
                 DestroyAtCell(cellPos);
             }
         }
+
+        DrawDebugGrid();
     }
 
     public bool ExistsAtCell(Vector3Int cellPos)
@@ -80,10 +75,10 @@ public class GameGrid : MonoBehaviour
         return staticObjects.ContainsKey(cellPos);
     }
 
-    public GameObject InstantiateAtCell(Vector3Int cellPos, bool isStatic = true)
+    public GameObject InstantiateAtCell(GameObject gameObject, Vector3Int cellPos, bool isStatic = true)
     {
         var tileCenter = grid.CellToWorld(cellPos) + (grid.cellSize / 2);
-        var instance = Instantiate(spawner, tileCenter, Quaternion.identity);
+        var instance = Instantiate(gameObject, tileCenter, Quaternion.identity);
 
         if (isStatic)
         {
@@ -112,5 +107,34 @@ public class GameGrid : MonoBehaviour
         }
 
         return true;
+    }
+
+    public Vector3 CellToWorld(Vector3Int cellPos)
+    {
+        return grid.CellToWorld(cellPos) + (grid.cellSize / 2);
+    }
+
+    public Vector3Int WorldTocell(Vector3 worldPos)
+    {
+        return grid.WorldToCell(worldPos);
+    }
+
+    private void DrawDebugGrid()
+    {
+        var rect = Camera.main.pixelRect;
+        var minTile = grid.WorldToCell(Camera.main.ScreenToWorldPoint(rect.min));
+        var maxTile = grid.WorldToCell(Camera.main.ScreenToWorldPoint(rect.max));
+
+        var cellSize = grid.cellSize;
+
+        for (var y = minTile.y; y <= maxTile.y; y += 1)
+        {
+            for (var x = minTile.x; x <= maxTile.x; x += 1)
+            {
+                var start = grid.CellToWorld(new Vector3Int(x, y, 0));
+                var end = new Vector3(start.x + cellSize.x, start.y + cellSize.y);
+                DrawDebugTile(start, end, Color.black, 1 / 60f);
+            }
+        }
     }
 }

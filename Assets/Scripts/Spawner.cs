@@ -14,17 +14,19 @@ public class Spawner : MonoBehaviour {
     void Start() {
         StartCoroutine(SpawnPrefab());
     }
-    
 
-    IEnumerator SpawnPrefab() {
-        while (true) {
+    IEnumerator SpawnPrefab()
+    {
+        while (true)
+        {
 
             GameObject prefab = Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
 
             Pathfinding pathfinding = prefab.GetComponent<Pathfinding>();
-            if (pathfinding != null) {
+            if (pathfinding != null)
+            {
                 pathfinding.target = target;
-            } 
+            }
             yield return new WaitForSeconds(spawnInterval);
         }
     }

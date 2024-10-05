@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class PriorityQueue<T>
 {
@@ -28,6 +29,18 @@ public class PriorityQueue<T>
         list.Add(Tuple.Create(item, score));
         set.Add(item);
         requireSort = true;
+    }
+
+    public void Replace(T item, float score)
+    {
+        Debug.Assert(set.Contains(item));
+
+        var index = list.FindIndex(delegate (Tuple<T, float> t)
+        {
+            return t.Item1.Equals(t);
+        });
+
+        list[index] = Tuple.Create(item, score);
     }
 
     public T Dequeue()
