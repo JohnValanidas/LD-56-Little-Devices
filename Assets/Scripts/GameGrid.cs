@@ -60,7 +60,9 @@ public class GameGrid : MonoBehaviour
                 var instance = InstantiateAtCell(objectToInstiate, cellPos);
 
                 var component = instance.GetComponent<Spawner>();
-                component.target = target.transform;
+                if (component != null) {
+                    component.target = target.transform;
+                }
             } else
             {
                 DestroyAtCell(cellPos);
