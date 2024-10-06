@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Pathfinding : MonoBehaviour {
-
-    public Transform body;
     public Transform target;
 
     public float minDistance = 0.1f;
@@ -28,7 +26,7 @@ public class Pathfinding : MonoBehaviour {
     void Update() {
         if (target == null)
         {
-            Destroy(this);
+            Destroy(gameObject);
             return;
         }
 
@@ -39,11 +37,11 @@ public class Pathfinding : MonoBehaviour {
 
         var cellPos = currentTargetCell.Value;
         var currentTarget = gameGrid.CellToWorld(cellPos);
-        var distance = currentTarget - body.position;
+        var distance = currentTarget - transform.position;
         var direction = distance.normalized * speed;
 
-        body.Translate(direction * Time.deltaTime);
-        var newDistance = currentTarget - body.position;
+        transform.Translate(direction * Time.deltaTime);
+        var newDistance = currentTarget - transform.position;
 
         if (distance.magnitude <= minDistance || newDistance.magnitude > distance.magnitude)
         {
@@ -53,15 +51,16 @@ public class Pathfinding : MonoBehaviour {
 
     private void UpdateNextTargetCell()
     {
-        if (target == null)
+        var targetPosition = target?.transform.position;
+        if (!targetPosition.HasValue)
         {
             return;
         }
 
-        var currentCell = gameGrid.WorldTocell(body.position);
-        var goalCell = gameGrid.WorldTocell(target.position);
-        var path = gameGrid.FindPath(currentCell, gameGrid.WorldTocell(target.position));
-        if (path != null)
+        var currentCell = gameGrid.WorldTocell(transform.position);
+        var goalCell = gameGrid.WorldTocell(targetPosition.Value);
+        var path = gameGrid.FindPath(currentCell, goalCell);
+        if (path != null && path.Count > 0)
         {
             path.RemoveAt(0);
             currentTargetCell = path[0];

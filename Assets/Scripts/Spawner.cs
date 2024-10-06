@@ -17,19 +17,20 @@ public class Spawner : MonoBehaviour {
 
     IEnumerator SpawnPrefab()
     {
+        var gameGrid = FindObjectOfType<GameGrid>();
+        Debug.Assert(gameGrid != null, "GameGrid NOT FOUND");
+
         while (true)
         {
-            var targetPosition = target?.position;
-            if (!targetPosition.HasValue)
+            if (target == null)
             {
                 yield return new WaitForSeconds(spawnInterval);
+                continue;
             }
 
-            var gameGrid = FindObjectOfType<GameGrid>();
-            Debug.Assert(gameGrid != null, "GameGrid NOT FOUND");
-
+            var targetPosition = target.transform.position;
             var start = gameGrid.WorldTocell(spawnPoint.position);
-            var goal = gameGrid.WorldTocell(targetPosition.Value);
+            var goal = gameGrid.WorldTocell(targetPosition);
 
             var path = gameGrid.FindPath(start, goal);
             if (path != null)
@@ -38,7 +39,7 @@ public class Spawner : MonoBehaviour {
                 Pathfinding pathfinding = prefab.GetComponent<Pathfinding>();
                 if (pathfinding != null)
                 {
-                    pathfinding.target = target;
+                    pathfinding.target = target.transform;
                 }
             }
 

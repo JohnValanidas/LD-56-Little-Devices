@@ -28,8 +28,10 @@ public class GridPathfinder
     {
         Debug.Log($"Reconstructing path: {current}, cameFrom: {cameFrom.Count}");
 
-        var path = new List<Vector3Int>();
-        path.Add(current);
+        var path = new List<Vector3Int>
+        {
+            current
+        };
 
         while (cameFrom.ContainsKey(current))
         {
@@ -54,7 +56,6 @@ public class GridPathfinder
         foreach (var pos in relativeNeighbors)
         {
             var newCellPos = cellPos + pos;
-            //if (gameGrid.InGridBounds(newCellPos) && !gameGrid.ExistsAtCell(newCellPos))
             if (IsValidNeighbor(newCellPos))
             {
                 yield return newCellPos;
@@ -82,8 +83,6 @@ public class GridPathfinder
 
         while (!openSet.IsEmpty())
         {
-            //Debug.Log($"openSet count: {openSet.Count}");
-
             var current = openSet.Dequeue();
             if (current == goal)
             {
