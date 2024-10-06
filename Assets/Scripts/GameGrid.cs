@@ -68,7 +68,7 @@ public class GameGrid : MonoBehaviour
 
                 var component = instance.GetComponent<Spawner>();
                 if (component != null) {
-                    component.target = target.transform;
+                    component.target = target;
                 }
             } else
             {

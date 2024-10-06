@@ -9,7 +9,7 @@ public class Health : MonoBehaviour
     private int _currentHealth = 100;
 
     public event Action<int, int> OnHealthChanged;
-    public event Action onUnitDestoryed;
+    public event Action OnUnitDestroyed;
     
     void Start()
     {
@@ -29,7 +29,7 @@ public class Health : MonoBehaviour
 
     void Die()
     {
-        onUnitDestoryed?.Invoke();
         Destroy(gameObject);
+        OnUnitDestroyed?.Invoke();
     }
 }

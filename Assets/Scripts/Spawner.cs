@@ -5,11 +5,12 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour {
     public GameObject prefabToSpawn;
+    public GameObject target;
     public Transform spawnPoint;
-    public Transform target;
     public float spawnInterval = 2f;
 
     public event Action<IList<Vector3Int>> OnTargetChanged;
+    public event Action OnSpawnerDestroyed;
 
     private GameGrid _gameGrid;
     private TargetGridPath _targetGridPath;
@@ -25,6 +26,12 @@ public class Spawner : MonoBehaviour {
 
         _gameGrid.OnRecalcPath += UpdateTargetPathLine;
 
+        var targetHealth = target.GetComponent<Health>();
+        if (targetHealth)
+        {
+            targetHealth.OnUnitDestroyed += TargetDestroyed;
+        }
+
         UpdateTargetPathLine();
 
         StartCoroutine(SpawnPrefab());
@@ -32,21 +39,20 @@ public class Spawner : MonoBehaviour {
 
     void OnDestroy()
     {
-        _gameGrid.OnRecalcPath += UpdateTargetPathLine;
+        _gameGrid.OnRecalcPath -= UpdateTargetPathLine;
+        StopAllCoroutines();
+        OnSpawnerDestroyed?.Invoke();
     }
 
     IEnumerator SpawnPrefab()
     {
         while (true)
         {
-
             if (_path == null || _path.Count == 0)
             {
                 yield return new WaitForSeconds(spawnInterval);
                 continue;
             }
-
-            Debug.Log("Spawner loop!");
 
             var prefab = Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
 
@@ -63,28 +69,35 @@ public class Spawner : MonoBehaviour {
 
     private void UpdateTargetPathLine()
     {
-        if (transform == null)
+        if (target == null)
         {
             _path = null;
+        }
+        else
+        {
+            var targetPosition = target.transform.position;
+            var start = _gameGrid.WorldTocell(spawnPoint.position);
+            var goal = _gameGrid.WorldTocell(targetPosition);
+            var path = _gameGrid.FindPath(start, goal);
+
             if (_targetGridPath != null)
             {
-                _targetGridPath.path = null;
+                _targetGridPath.path = path;
             }
-            return;
+            _path = path;
         }
-
-        var targetPosition = target.transform.position;
-        var start = _gameGrid.WorldTocell(spawnPoint.position);
-        var goal = _gameGrid.WorldTocell(targetPosition);
-        var path = _gameGrid.FindPath(start, goal);
 
         if (_targetGridPath != null)
         {
-            _targetGridPath.path = path;
+            _targetGridPath.path = _path;
         }
 
-        _path = path;
+        OnTargetChanged?.Invoke(_path);
+    }
 
-        OnTargetChanged?.Invoke(path);
+    private void TargetDestroyed()
+    {
+        target = null;
+        UpdateTargetPathLine();
     }
 }

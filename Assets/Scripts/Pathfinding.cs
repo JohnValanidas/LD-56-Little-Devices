@@ -18,6 +18,7 @@ public class Pathfinding : MonoBehaviour {
     void Start()
     {
         spawner.OnTargetChanged += UpdateTargetPath;
+        spawner.OnSpawnerDestroyed += Die;
         transform.position = gameGrid.CellToWorld(path[0]);
         _cellPosition = 0;
     }
@@ -25,6 +26,7 @@ public class Pathfinding : MonoBehaviour {
     private void OnDestroy()
     {
         spawner.OnTargetChanged -= UpdateTargetPath;
+        spawner.OnSpawnerDestroyed -= Die;
         OnDestroyed?.Invoke();
     }
 
@@ -32,14 +34,14 @@ public class Pathfinding : MonoBehaviour {
     void Update() {
         if (path == null || path.Count <= 1)
         {
-            Destroy(gameObject);
+            Die();
             return;
         }
 
         _cellPosition = Math.Min(_cellPosition + speed * Time.deltaTime, path.Count - 1);
 
         var currentCellIndex = (int)Math.Floor(_cellPosition);
-        var targetCellIndex = currentCellIndex + 1;
+        var targetCellIndex = Math.Min(currentCellIndex + 1, path.Count - 1);
         var currentOffset = _cellPosition - currentCellIndex;
 
         var currentCell = gameGrid.CellToWorld(path[currentCellIndex]);
@@ -52,6 +54,17 @@ public class Pathfinding : MonoBehaviour {
     private void UpdateTargetPath(IList<Vector3Int> path)
     {
         this.path = path;
-        _cellPosition = Math.Min(_cellPosition, path.Count - 1);
+        if (path == null)
+        {
+            _cellPosition = 0;
+        } else
+        {
+            _cellPosition = Math.Min(_cellPosition, Math.Max(path.Count - 1, 0));
+        }
+    }
+
+    private void Die()
+    {
+        Destroy(gameObject);
     }
 }
