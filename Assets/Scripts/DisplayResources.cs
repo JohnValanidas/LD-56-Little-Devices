@@ -8,7 +8,8 @@ using UnityEngine;
 public class DisplayResources : MonoBehaviour
 {
     private TMP_Text _text;
-    private int index = 0;
+    private int _index = 0;
+    private string _statLine = ""; 
 
     private List<Tuple<string, float>> stats;
     void Start()
@@ -18,16 +19,26 @@ public class DisplayResources : MonoBehaviour
         StartCoroutine(DisplayStats());
     }
 
+    private void Update() {
+        // probably should only update this stuff when things get triggered instead of every frame
+        StringBuilder builder = new StringBuilder();
+        builder.Append(_statLine).Append("\n").Append("MODE: ").Append(Globals.mode);
+        if (Globals.mode == InteractionMode.Build) {
+            builder.Append("\n").Append("TOWER TYPE: ").Append(Globals.buildType);
+        }
+        _text.SetText(builder.ToString());
+    }
+
     IEnumerator DisplayStats() {
         while (true) {
-            var item =  stats[index++];
+            var item =  stats[_index++];
 
             StringBuilder builder = new StringBuilder();
             builder.Append(item.Item1).Append(": ").Append(item.Item2);
-            _text.SetText(builder.ToString());
+            _statLine = builder.ToString();
             
-            if (index == stats.Count) {
-                index = 0;
+            if (_index == stats.Count) {
+                _index = 0;
             }
 
             yield return new WaitForSeconds(2);
