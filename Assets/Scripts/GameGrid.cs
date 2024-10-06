@@ -16,8 +16,8 @@ public class GameGrid : MonoBehaviour
     private GridPathfinder pathfinder = new();
 
     private Dictionary<Vector3Int, GameObject> staticObjects = new Dictionary<Vector3Int, GameObject>();
-
-
+    
+    
     private void DrawDebugTile(Vector3 bottomLeft, Vector3 topRight, Color color, float duration)
     {
         var topLeft = new Vector3(bottomLeft.x, topRight.y);
