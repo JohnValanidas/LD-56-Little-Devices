@@ -3,5 +3,5 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public static class Globals {
-    // public Bounds worldBounds;
+    public static HackingResources hackingResources = new HackingResources();
 }

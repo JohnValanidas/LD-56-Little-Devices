@@ -98,10 +98,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0943a9d3354fa904bbab2d1c7f93aab8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnPoint: {fileID: 3969782523050125637}
-  spawnInterval: 1
   prefabToSpawn: {fileID: 4006868810535888784, guid: c2ba95a89769f57488b61f403ee641d8, type: 3}
+  spawnPoint: {fileID: 3969782523050125637}
   target: {fileID: 0}
+  spawnInterval: 1
 --- !u!114 &7212341352061414975
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,7 +109,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6537328198580573308}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2a1cbcff0cceb4d30b693a1134ad2d48, type: 3}
   m_Name: 
