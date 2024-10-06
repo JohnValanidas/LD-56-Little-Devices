@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class TargetGridPath : MonoBehaviour
 {
@@ -47,6 +48,7 @@ public class TargetGridPath : MonoBehaviour
         for (int i = 0; i < numPoints; i += 1)
         {
             points[i] = gameGrid.CellToWorld(_path[i]);
+            points[i].z = 0.1f;
         }
 
 
@@ -56,12 +58,15 @@ public class TargetGridPath : MonoBehaviour
             new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 1.0f) }
         );
 
-        Material material = Resources.Load<Material>("Default-Line");
+        //var material = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Line");
+        var material = new Material(Shader.Find("Sprites/Default"));
 
         lineRenderer.widthMultiplier = 0.1f;
         lineRenderer.positionCount = numPoints;
         lineRenderer.colorGradient = gradient;
         lineRenderer.material = material;
         lineRenderer.SetPositions(points);
+
+        _updatePath = false;
     }
 }

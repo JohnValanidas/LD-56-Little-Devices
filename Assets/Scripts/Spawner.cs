@@ -40,11 +40,14 @@ public class Spawner : MonoBehaviour {
     {
         while (true)
         {
+
             if (_path == null || _path.Count == 0)
             {
                 yield return new WaitForSeconds(spawnInterval);
                 continue;
             }
+
+            Debug.Log("Spawner loop!");
 
             var prefab = Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
 

@@ -17,6 +17,8 @@ public class Pathfinding : MonoBehaviour {
         Debug.Assert(_gameGrid != null, "GameGrid NOT FOUND!");
 
         _gameGrid.AddPathEventListener(UpdateNextTargetCell);
+
+        UpdateNextTargetCell();
     }
 
     private void OnDestroy()
