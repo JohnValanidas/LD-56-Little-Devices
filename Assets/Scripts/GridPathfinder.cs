@@ -3,34 +3,25 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class GridPathfinder : MonoBehaviour
+public delegate float GridPathfinderHeuristic(Vector3Int cellPos);
+public delegate float GridPathfinderWeight(Vector3Int current, Vector3Int neighbor);
+public delegate bool GridPathfinderIsValidNeighbor(Vector3Int cellPos);
+
+
+public class GridPathfinder
 {
-    private GameGrid gameGrid;
+    public GridPathfinderHeuristic Heuristic { get; set; }
+    public GridPathfinderWeight Weight { get; set; }
+    public GridPathfinderIsValidNeighbor IsValidNeighbor { get; set; }
 
     private List<Vector3Int> relativeNeighbors = new List<Vector3Int>();
 
-    GridPathfinder()
+    public GridPathfinder()
     {
         relativeNeighbors.Add(new Vector3Int(1, 0));
         relativeNeighbors.Add(new Vector3Int(0, 1));
         relativeNeighbors.Add(new Vector3Int(-1, 0));
         relativeNeighbors.Add(new Vector3Int(0, -1));
-    }
-
-    void Start()
-    {
-        gameGrid = FindObjectOfType<GameGrid>();
-    }
-
-
-    private int Heuristic(Vector3Int cellPos)
-    {
-        return 1;
-    }
-
-    private float Weight(Vector3Int current, Vector3Int neighbor)
-    {
-        return 1;
     }
 
     private IList<Vector3Int> ReconstructPath(Dictionary<Vector3Int, Vector3Int> cameFrom, Vector3Int current)
@@ -63,7 +54,8 @@ public class GridPathfinder : MonoBehaviour
         foreach (var pos in relativeNeighbors)
         {
             var newCellPos = cellPos + pos;
-            if (gameGrid.InGridBounds(newCellPos) && !gameGrid.ExistsAtCell(newCellPos))
+            //if (gameGrid.InGridBounds(newCellPos) && !gameGrid.ExistsAtCell(newCellPos))
+            if (IsValidNeighbor(newCellPos))
             {
                 yield return newCellPos;
             }

@@ -13,8 +13,10 @@ public class GameGrid : MonoBehaviour
     public GameObject block;
 
     private GridLayout grid;
+    private GridPathfinder pathfinder = new();
 
     private Dictionary<Vector3Int, GameObject> staticObjects = new Dictionary<Vector3Int, GameObject>();
+
 
     private void DrawDebugTile(Vector3 bottomLeft, Vector3 topRight, Color color, float duration)
     {
@@ -23,7 +25,6 @@ public class GameGrid : MonoBehaviour
         Debug.DrawLine(bottomLeft, topLeft, color, duration);
         Debug.DrawLine(bottomLeft, bottomRight, color, duration);
         Debug.DrawLine(topLeft, topRight, color, duration);
-
     }
 
     // Start is called before the first frame update
@@ -33,6 +34,21 @@ public class GameGrid : MonoBehaviour
 
         grid = GetComponentInParent<GridLayout>();
         Debug.Assert(grid, "Grid NOT FOUND!");
+
+        pathfinder.IsValidNeighbor = delegate (Vector3Int cellPos)
+        {
+            return InGridBounds(cellPos) && !ExistsAtCell(cellPos);
+        };
+
+        pathfinder.Weight = delegate (Vector3Int current, Vector3Int neighbor)
+        {
+            return 1f;
+        };
+
+        pathfinder.Heuristic = delegate (Vector3Int cellPos)
+        {
+            return 1f;
+        };
     }
 
     // Update is called once per frame
@@ -119,6 +135,11 @@ public class GameGrid : MonoBehaviour
     public Vector3Int WorldTocell(Vector3 worldPos)
     {
         return grid.WorldToCell(worldPos);
+    }
+
+    public IList<Vector3Int> FindPath(Vector3Int start, Vector3Int goal)
+    {
+        return pathfinder.FindPath(start, goal);
     }
 
     private void DrawDebugGrid()

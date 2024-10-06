@@ -12,34 +12,32 @@ public class Pathfinding : MonoBehaviour {
     public float speed;
 
     private GameGrid gameGrid;
-    private GridPathfinder gridPathfinder;
 
-    private IList<Vector3Int> pathCells;
+    Vector3Int? currentTargetCell;
 
     // Start is called before the first frame update
     void Start()
     {
         gameGrid = FindObjectOfType<GameGrid>();
-        gridPathfinder = FindObjectOfType<GridPathfinder>();
+        Debug.Assert(gameGrid != null, "GameGrid NOT FOUND!");
 
-        var startCellPos = gameGrid.WorldTocell(transform.position);
-        var targetCellPos = gameGrid.WorldTocell(target.position);
-        pathCells = gridPathfinder.FindPath(startCellPos, targetCellPos);
-
-        // Remove current cell pos
-        pathCells.RemoveAt(0);
-
-        Debug.Log($"Path cells: {pathCells.Count}");
+        UpdateNextTargetCell();
     }
 
     // Update is called once per frame
     void Update() {
-        if (pathCells == null || pathCells.Count == 0)
+        if (target == null)
+        {
+            Destroy(this);
+            return;
+        }
+
+        if (!currentTargetCell.HasValue)
         {
             return;
         }
 
-        var cellPos = pathCells[0];
+        var cellPos = currentTargetCell.Value;
         var currentTarget = gameGrid.CellToWorld(cellPos);
         var distance = currentTarget - body.position;
         var direction = distance.normalized * speed;
@@ -49,7 +47,28 @@ public class Pathfinding : MonoBehaviour {
 
         if (distance.magnitude <= minDistance || newDistance.magnitude > distance.magnitude)
         {
-            pathCells.RemoveAt(0);
+            UpdateNextTargetCell();
+        }
+    }
+
+    private void UpdateNextTargetCell()
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        var currentCell = gameGrid.WorldTocell(body.position);
+        var goalCell = gameGrid.WorldTocell(target.position);
+        var path = gameGrid.FindPath(currentCell, gameGrid.WorldTocell(target.position));
+        if (path != null)
+        {
+            path.RemoveAt(0);
+            currentTargetCell = path[0];
+        }
+        else
+        {
+            currentTargetCell = null;
         }
     }
 }

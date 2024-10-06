@@ -98,6 +98,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnPoint: {fileID: 3969782523050125637}
-  spawnInterval: 2
+  spawnInterval: 1
   prefabToSpawn: {fileID: 4006868810535888784, guid: c2ba95a89769f57488b61f403ee641d8, type: 3}
   target: {fileID: 0}
