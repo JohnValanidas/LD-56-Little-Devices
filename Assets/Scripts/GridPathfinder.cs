@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public delegate float GridPathfinderHeuristic(Vector3Int cellPos);
+public delegate float GridPathfinderHeuristic(Vector3Int cellPos, Vector3Int target);
 public delegate float GridPathfinderWeight(Vector3Int current, Vector3Int neighbor);
 public delegate bool GridPathfinderIsValidNeighbor(Vector3Int cellPos);
 
@@ -14,14 +14,14 @@ public class GridPathfinder
     public GridPathfinderWeight Weight { get; set; }
     public GridPathfinderIsValidNeighbor IsValidNeighbor { get; set; }
 
-    private List<Vector3Int> relativeNeighbors = new List<Vector3Int>();
+    private List<Vector3Int> _relativeNeighbors = new List<Vector3Int>();
 
     public GridPathfinder()
     {
-        relativeNeighbors.Add(new Vector3Int(1, 0));
-        relativeNeighbors.Add(new Vector3Int(0, 1));
-        relativeNeighbors.Add(new Vector3Int(-1, 0));
-        relativeNeighbors.Add(new Vector3Int(0, -1));
+        _relativeNeighbors.Add(new Vector3Int(1, 0));
+        _relativeNeighbors.Add(new Vector3Int(0, 1));
+        _relativeNeighbors.Add(new Vector3Int(-1, 0));
+        _relativeNeighbors.Add(new Vector3Int(0, -1));
     }
 
     private IList<Vector3Int> ReconstructPath(Dictionary<Vector3Int, Vector3Int> cameFrom, Vector3Int current)
@@ -53,7 +53,7 @@ public class GridPathfinder
 
     private IEnumerable<Vector3Int> Neighbors(Vector3Int cellPos)
     {
-        foreach (var pos in relativeNeighbors)
+        foreach (var pos in _relativeNeighbors)
         {
             var newCellPos = cellPos + pos;
             if (IsValidNeighbor(newCellPos))
@@ -77,7 +77,7 @@ public class GridPathfinder
         gScore[start] = 0f;
 
         var fScore = new Dictionary<Vector3Int, float>();
-        fScore[start] = Heuristic(start);
+        fScore[start] = Heuristic(start, goal);
 
         openSet.Enqueue(start, fScore[start]);
 
@@ -96,7 +96,7 @@ public class GridPathfinder
                 {
                     cameFrom[neighbor] = current;
                     gScore[neighbor] = tentative_gScore;
-                    fScore[neighbor] = tentative_gScore + Heuristic(neighbor);
+                    fScore[neighbor] = tentative_gScore + Heuristic(neighbor, goal);
                     if (!openSet.Contains(neighbor))
                     {
                         openSet.Enqueue(neighbor, fScore.GetValueOrDefault(neighbor, float.PositiveInfinity));

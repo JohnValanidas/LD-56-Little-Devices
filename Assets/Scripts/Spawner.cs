@@ -10,40 +10,76 @@ public class Spawner : MonoBehaviour {
     public GameObject prefabToSpawn;
 
     public Transform target;
+
+
+    private GameGrid _gameGrid;
+    private TargetGridPath _targetGridPath;
+    private IList<Vector3Int> _path;
+
     // Start is called before the first frame update
-    void Start() {
+    void Start()
+    {
+        _gameGrid = FindObjectOfType<GameGrid>();
+        Debug.Assert(_gameGrid != null, "GameGrid NOT FOUND");
+
+        _targetGridPath = GetComponent<TargetGridPath>();
+
+        _gameGrid.AddPathEventListener(UpdateTargetPathLine);
+
+        UpdateTargetPathLine();
+
         StartCoroutine(SpawnPrefab());
+    }
+
+    void OnDestroy()
+    {
+        _gameGrid.RemovePathEventListener(UpdateTargetPathLine);
     }
 
     IEnumerator SpawnPrefab()
     {
-        var gameGrid = FindObjectOfType<GameGrid>();
-        Debug.Assert(gameGrid != null, "GameGrid NOT FOUND");
-
         while (true)
         {
-            if (target == null)
+            if (_path == null || _path.Count == 0)
             {
                 yield return new WaitForSeconds(spawnInterval);
                 continue;
             }
 
-            var targetPosition = target.transform.position;
-            var start = gameGrid.WorldTocell(spawnPoint.position);
-            var goal = gameGrid.WorldTocell(targetPosition);
+            var prefab = Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
 
-            var path = gameGrid.FindPath(start, goal);
-            if (path != null)
+            Pathfinding pathfinding = prefab.GetComponent<Pathfinding>();
+            if (pathfinding != null)
             {
-                GameObject prefab = Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
-                Pathfinding pathfinding = prefab.GetComponent<Pathfinding>();
-                if (pathfinding != null)
-                {
-                    pathfinding.target = target.transform;
-                }
+                pathfinding.target = target.transform;
             }
 
             yield return new WaitForSeconds(spawnInterval);
         }
+    }
+
+    private void UpdateTargetPathLine()
+    {
+        if (transform == null)
+        {
+            _path = null;
+            if (_targetGridPath != null)
+            {
+                _targetGridPath.path = null;
+            }
+            return;
+        }
+
+        var targetPosition = target.transform.position;
+        var start = _gameGrid.WorldTocell(spawnPoint.position);
+        var goal = _gameGrid.WorldTocell(targetPosition);
+        var path = _gameGrid.FindPath(start, goal);
+
+        if (_targetGridPath != null)
+        {
+            _targetGridPath.path = path;
+        }
+
+        _path = path;
     }
 }

@@ -4,43 +4,44 @@ using UnityEngine;
 
 public class PriorityQueue<T>
 {
-    private List<Tuple<T, float>> list = new List<Tuple<T, float>>();
-    private HashSet<T> set = new HashSet<T>();
-
-    private bool requireSort = false;
+    private List<Tuple<T, float>> _list = new();
+    private HashSet<T> _set = new();
+    private bool _requireSort = false;
 
     public int Count
     {
-        get => list.Count;
+        get => _list.Count;
     }
 
     public bool IsEmpty()
     {
-        return list.Count == 0;
+        return _list.Count == 0;
     }
 
     public bool Contains(T item)
     {
-        return set.Contains(item);
+        return _set.Contains(item);
     }
 
     public void Enqueue(T item, float score)
     {
-        list.Add(Tuple.Create(item, score));
-        set.Add(item);
-        requireSort = true;
+        _list.Add(Tuple.Create(item, score));
+        _set.Add(item);
+        _requireSort = true;
     }
 
     public void Replace(T item, float score)
     {
-        Debug.Assert(set.Contains(item));
+        Debug.Assert(_set.Contains(item));
 
-        var index = list.FindIndex(delegate (Tuple<T, float> t)
+        var index = _list.FindIndex(delegate (Tuple<T, float> t)
         {
-            return t.Item1.Equals(t);
+            return t.Item1.Equals(item);
         });
 
-        list[index] = Tuple.Create(item, score);
+        Debug.Log($"PriorityQueue.Replace: {item}, score: {score}, index: {index}, size: {_list.Count}, contains: {_set.Contains(item)}");
+
+        _list[index] = Tuple.Create(item, score);
     }
 
     public T Dequeue()
@@ -49,9 +50,9 @@ public class PriorityQueue<T>
 
         if (!IsEmpty())
         {
-            var item = list[0].Item1;
-            list.RemoveAt(0);
-            set.Remove(item);
+            var item = _list[0].Item1;
+            _list.RemoveAt(0);
+            _set.Remove(item);
             return item ;
         }
 
@@ -60,15 +61,15 @@ public class PriorityQueue<T>
 
     private void SortList()
     {
-        if (!requireSort)
+        if (!_requireSort)
         {
             return;
         }
 
-        list.Sort(delegate (Tuple<T, float> a, Tuple<T, float> b) {
+        _list.Sort(delegate (Tuple<T, float> a, Tuple<T, float> b) {
             return a.Item2.CompareTo(b.Item2);
         });
-        requireSort = false;
+        _requireSort = false;
 
     }
 }
