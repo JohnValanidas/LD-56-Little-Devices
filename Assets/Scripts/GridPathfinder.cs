@@ -14,7 +14,7 @@ public class GridPathfinder
     public GridPathfinderWeight Weight { get; set; }
     public GridPathfinderIsValidNeighbor IsValidNeighbor { get; set; }
 
-    private List<Vector3Int> _relativeNeighbors = new List<Vector3Int>();
+    private readonly List<Vector3Int> _relativeNeighbors = new();
 
     public GridPathfinder()
     {

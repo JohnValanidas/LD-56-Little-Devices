@@ -1,71 +1,57 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Pathfinding : MonoBehaviour {
-    public Transform target;
+    public IList<Vector3Int> path;
     public float minDistance = 0.1f;
     public float speed;
+    public Spawner spawner;
+    public GameGrid gameGrid;
 
-    private GameGrid _gameGrid;
-    private Vector3Int? _targetcell;
+    public event Action OnDestroyed;
+
+    private float _cellPosition = 0;
 
     // Start is called before the first frame update
     void Start()
     {
-        _gameGrid = FindObjectOfType<GameGrid>();
-        Debug.Assert(_gameGrid != null, "GameGrid NOT FOUND!");
-
-        _gameGrid.AddPathEventListener(UpdateNextTargetCell);
-
-        UpdateNextTargetCell();
+        spawner.OnTargetChanged += UpdateTargetPath;
+        transform.position = gameGrid.CellToWorld(path[0]);
+        _cellPosition = 0;
     }
 
     private void OnDestroy()
     {
-        _gameGrid.RemovePathEventListener(UpdateNextTargetCell);
+        spawner.OnTargetChanged -= UpdateTargetPath;
+        OnDestroyed?.Invoke();
     }
 
     // Update is called once per frame
     void Update() {
-        if (target == null || !_targetcell.HasValue)
+        if (path == null || path.Count <= 1)
         {
             Destroy(gameObject);
             return;
         }
 
-        var cellPos = _targetcell.Value;
-        var currentTarget = _gameGrid.CellToWorld(cellPos);
-        var distance = currentTarget - transform.position;
-        var direction = distance.normalized * speed;
+        _cellPosition = Math.Min(_cellPosition + speed * Time.deltaTime, path.Count - 1);
 
-        transform.Translate(direction * Time.deltaTime);
-        var newDistance = currentTarget - transform.position;
+        var currentCellIndex = (int)Math.Floor(_cellPosition);
+        var targetCellIndex = currentCellIndex + 1;
+        var currentOffset = _cellPosition - currentCellIndex;
 
-        if (distance.magnitude <= minDistance || newDistance.magnitude > distance.magnitude)
-        {
-            UpdateNextTargetCell();
-        }
+        var currentCell = gameGrid.CellToWorld(path[currentCellIndex]);
+        var targetCell = gameGrid.CellToWorld(path[targetCellIndex]);
+        var direction = targetCell - currentCell;
+
+        transform.position = currentCell + (direction * currentOffset);
     }
 
-    private void UpdateNextTargetCell()
+    private void UpdateTargetPath(IList<Vector3Int> path)
     {
-        var targetPosition = target?.transform.position;
-        if (!targetPosition.HasValue)
-        {
-            return;
-        }
-
-        var currentCell = _gameGrid.WorldTocell(transform.position);
-        var goalCell = _gameGrid.WorldTocell(targetPosition.Value);
-        var path = _gameGrid.FindPath(currentCell, goalCell);
-        if (path != null && path.Count > 1)
-        {
-            _targetcell = path[1];
-        }
-        else
-        {
-            _targetcell = null;
-        }
+        this.path = path;
+        _cellPosition = Math.Min(_cellPosition, path.Count - 1);
     }
 }

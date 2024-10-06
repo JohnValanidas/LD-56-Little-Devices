@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Events;
 
 public class GameGrid : MonoBehaviour
 {
@@ -14,11 +11,12 @@ public class GameGrid : MonoBehaviour
     public GameObject target;
     public GameObject block;
 
+    public event Action OnRecalcPath;
+
     private GridLayout _grid;
-    private GridPathfinder _pathfinder = new();
-    private Dictionary<Tuple<Vector3Int, Vector3Int>, IList<Vector3Int>> _pathCache = new();
-    private Dictionary<Vector3Int, GameObject> _staticObjects = new();
-    private UnityEvent _pathEvent = new();
+    private readonly GridPathfinder _pathfinder = new();
+    private readonly Dictionary<Tuple<Vector3Int, Vector3Int>, IList<Vector3Int>> _pathCache = new();
+    private readonly Dictionary<Vector3Int, GameObject> _staticObjects = new();
 
     // Start is called before the first frame update
     void Start()
@@ -105,7 +103,7 @@ public class GameGrid : MonoBehaviour
 
         _staticObjects.Add(cellPos, gameObject);
         _pathCache.Clear();
-        _pathEvent.Invoke();
+        OnRecalcPath?.Invoke();
     }
 
     public GameObject RemoveAtCell(Vector3Int cellPos)
@@ -115,7 +113,7 @@ public class GameGrid : MonoBehaviour
         var gameObject = _staticObjects[cellPos];
         _staticObjects.Remove(cellPos);
         _pathCache.Clear();
-        _pathEvent.Invoke();
+        OnRecalcPath?.Invoke();
 
         return gameObject;
     }
@@ -156,16 +154,6 @@ public class GameGrid : MonoBehaviour
         var path = _pathfinder.FindPath(start, goal);
         _pathCache[tuple] = path;
         return path;
-    }
-
-    public void AddPathEventListener(UnityAction listener)
-    {
-        _pathEvent.AddListener(listener);
-    }
-
-    public void RemovePathEventListener(UnityAction listener)
-    {
-        _pathEvent.RemoveListener(listener);
     }
 
     private void DrawDebugTile(Vector3 bottomLeft, Vector3 topRight, Color color, float duration)

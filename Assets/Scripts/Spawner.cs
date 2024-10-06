@@ -1,16 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Spawner : MonoBehaviour {
+    public GameObject prefabToSpawn;
     public Transform spawnPoint;
-
+    public Transform target;
     public float spawnInterval = 2f;
 
-    public GameObject prefabToSpawn;
-
-    public Transform target;
-
+    public event Action<IList<Vector3Int>> OnTargetChanged;
 
     private GameGrid _gameGrid;
     private TargetGridPath _targetGridPath;
@@ -24,7 +23,7 @@ public class Spawner : MonoBehaviour {
 
         _targetGridPath = GetComponent<TargetGridPath>();
 
-        _gameGrid.AddPathEventListener(UpdateTargetPathLine);
+        _gameGrid.OnRecalcPath += UpdateTargetPathLine;
 
         UpdateTargetPathLine();
 
@@ -33,7 +32,7 @@ public class Spawner : MonoBehaviour {
 
     void OnDestroy()
     {
-        _gameGrid.RemovePathEventListener(UpdateTargetPathLine);
+        _gameGrid.OnRecalcPath += UpdateTargetPathLine;
     }
 
     IEnumerator SpawnPrefab()
@@ -51,10 +50,11 @@ public class Spawner : MonoBehaviour {
 
             var prefab = Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
 
-            Pathfinding pathfinding = prefab.GetComponent<Pathfinding>();
-            if (pathfinding != null)
+            if (prefab.TryGetComponent<Pathfinding>(out var pathfinding))
             {
-                pathfinding.target = target.transform;
+                pathfinding.gameGrid = _gameGrid;
+                pathfinding.path = _path;
+                pathfinding.spawner = this;
             }
 
             yield return new WaitForSeconds(spawnInterval);
@@ -84,5 +84,7 @@ public class Spawner : MonoBehaviour {
         }
 
         _path = path;
+
+        OnTargetChanged?.Invoke(path);
     }
 }
