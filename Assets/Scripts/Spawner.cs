@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour {
     public GameObject prefabToSpawn;
-    public GameObject target;
     public Transform spawnPoint;
     public float spawnInterval = 2f;
+    public GameObject target;
 
     public event Action<IList<Vector3Int>> OnTargetChanged;
     public event Action OnSpawnerDestroyed;
@@ -15,6 +15,7 @@ public class Spawner : MonoBehaviour {
     private GameGrid _gameGrid;
     private TargetGridPath _targetGridPath;
     private IList<Vector3Int> _path;
+    private GameObject _target;
 
     // Start is called before the first frame update
     void Start()
@@ -26,15 +27,18 @@ public class Spawner : MonoBehaviour {
 
         _gameGrid.OnRecalcPath += UpdateTargetPathLine;
 
-        var targetHealth = target.GetComponent<Health>();
-        if (targetHealth)
-        {
-            targetHealth.OnUnitDestroyed += TargetDestroyed;
-        }
 
-        UpdateTargetPathLine();
+        UpdateTarget(_target);
 
         StartCoroutine(SpawnPrefab());
+    }
+
+    private void Update()
+    {
+        if (_target != target)
+        {
+            UpdateTarget(target);
+        }
     }
 
     void OnDestroy()
@@ -69,13 +73,13 @@ public class Spawner : MonoBehaviour {
 
     private void UpdateTargetPathLine()
     {
-        if (target == null)
+        if (_target == null)
         {
             _path = null;
         }
         else
         {
-            var targetPosition = target.transform.position;
+            var targetPosition = _target.transform.position;
             var start = _gameGrid.WorldTocell(spawnPoint.position);
             var goal = _gameGrid.WorldTocell(targetPosition);
             var path = _gameGrid.FindPath(start, goal);
@@ -97,7 +101,31 @@ public class Spawner : MonoBehaviour {
 
     private void TargetDestroyed()
     {
-        target = null;
+        _target = null;
+        UpdateTargetPathLine();
+    }
+
+    private void UpdateTarget(GameObject newTarget)
+    {
+        if (_target)
+        {
+            var targetHealth = _target.GetComponent<Health>();
+            if (targetHealth)
+            {
+                targetHealth.OnUnitDestroyed -= TargetDestroyed;
+            }
+        }
+
+        _target = newTarget;
+        if (_target)
+        {
+            var targetHealth = _target.GetComponent<Health>();
+            if (targetHealth)
+            {
+                targetHealth.OnUnitDestroyed += TargetDestroyed;
+            }
+        }
+
         UpdateTargetPathLine();
     }
 }

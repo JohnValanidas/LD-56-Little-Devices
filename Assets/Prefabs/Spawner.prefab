@@ -100,8 +100,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefabToSpawn: {fileID: 4006868810535888784, guid: c2ba95a89769f57488b61f403ee641d8, type: 3}
   spawnPoint: {fileID: 3969782523050125637}
-  target: {fileID: 0}
   spawnInterval: 1
+  target: {fileID: 0}
 --- !u!114 &7212341352061414975
 MonoBehaviour:
   m_ObjectHideFlags: 0

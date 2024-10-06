@@ -14,7 +14,7 @@ public class GridPathfinder
     public GridPathfinderWeight Weight { get; set; }
     public GridPathfinderIsValidNeighbor IsValidNeighbor { get; set; }
 
-    private readonly List<Vector3Int> _relativeNeighbors = new();
+    private List<Vector3Int> _relativeNeighbors = new();
 
     public GridPathfinder()
     {
@@ -55,11 +55,7 @@ public class GridPathfinder
     {
         foreach (var pos in _relativeNeighbors)
         {
-            var newCellPos = cellPos + pos;
-            if (IsValidNeighbor(newCellPos))
-            {
-                yield return newCellPos;
-            }
+            yield return cellPos + pos;
         }
 
         yield break;
@@ -73,11 +69,15 @@ public class GridPathfinder
 
         var cameFrom = new Dictionary<Vector3Int, Vector3Int>();
 
-        var gScore = new Dictionary<Vector3Int, float>();
-        gScore[start] = 0f;
+        var gScore = new Dictionary<Vector3Int, float>
+        {
+            [start] = 0f
+        };
 
-        var fScore = new Dictionary<Vector3Int, float>();
-        fScore[start] = Heuristic(start, goal);
+        var fScore = new Dictionary<Vector3Int, float>
+        {
+            [start] = Heuristic(start, goal)
+        };
 
         openSet.Enqueue(start, fScore[start]);
 
@@ -91,6 +91,11 @@ public class GridPathfinder
             
             foreach (var neighbor in Neighbors(current))
             {
+                if (neighbor != goal && !IsValidNeighbor(neighbor))
+                {
+                    continue;
+                }
+
                 var tentative_gScore = gScore.GetValueOrDefault(current, float.PositiveInfinity) + Weight(current, neighbor);
                 if (tentative_gScore < gScore.GetValueOrDefault(neighbor, float.PositiveInfinity))
                 {
