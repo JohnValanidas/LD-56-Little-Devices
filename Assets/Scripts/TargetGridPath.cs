@@ -8,14 +8,13 @@ public class TargetGridPath : MonoBehaviour
     public LineRenderer lineRenderer;
 
     private IList<Vector3Int> _path;
-    private bool _updatePath = false;
 
     public IList<Vector3Int> path
     {
         set
         {
             _path = value != null ? value : new List<Vector3Int>();
-            _updatePath = true;
+            UpdateLinePath();
         }
     }
 
@@ -29,19 +28,17 @@ public class TargetGridPath : MonoBehaviour
         }
 
         Debug.Assert(lineRenderer != null, "LineRenderer NOT FOUND!");
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (_updatePath)
-        {
-            UpdateLinePath();
-        }
+        UpdateLinePath();
     }
 
     public void UpdateLinePath()
     {
+        if (!lineRenderer)
+        {
+            return;
+        }
+
         var numPoints = _path.Count;
         var gameGrid = FindObjectOfType<GameGrid>();
         var points = new Vector3[numPoints];
@@ -66,7 +63,5 @@ public class TargetGridPath : MonoBehaviour
         lineRenderer.colorGradient = gradient;
         lineRenderer.material = material;
         lineRenderer.SetPositions(points);
-
-        _updatePath = false;
     }
 }
