@@ -45,12 +45,18 @@ public class GameGrid : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Globals.mode != InteractionMode.Build)
+        {
+            return;
+        }
+
         GameObject objectToInstiate = null;
 
         if (Input.GetMouseButtonDown(0)) // left
         {
             objectToInstiate = spawner;
-        } else if (Input.GetMouseButtonDown(1)) // right
+        }
+        else if (Input.GetMouseButtonDown(1)) // right
         {
             objectToInstiate = block;
         }
@@ -70,7 +76,8 @@ public class GameGrid : MonoBehaviour
                 if (component != null) {
                     component.target = target;
                 }
-            } else
+            }
+            else
             {
                 DestroyAtCell(cellPos);
             }
